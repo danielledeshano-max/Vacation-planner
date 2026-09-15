@@ -310,6 +310,7 @@ function openTrip(trip) {
   ? trip.activities.map(item => `
       <div class="trip">
         <strong>📅 ${item.date}</strong>
+        <p>🕐 ${item.time || "No time set"}</p>
         <p>${item.plan}</p>
       </div>
     `).join("")
@@ -331,6 +332,8 @@ function openTrip(trip) {
 
   const plan = prompt("What would you like to do?");
   if (!plan) return;
+    const time = prompt("What time is this plan?");
+if (!time) return;
 
     const trip = trips.find(t => t.id === tripId);
 
@@ -340,6 +343,7 @@ function openTrip(trip) {
 
   trip.activities.push({
     date: date,
+    time: time,
     plan: plan
   });
 
