@@ -205,76 +205,39 @@ function displayTrips() {
 
   tripsList.innerHTML = "";
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
   trips.forEach(trip => {
-    const start = new Date(trip.startDate + "T12:00:00");
-    const end = new Date(trip.endDate + "T12:00:00");
-
-    const todayDate = new Date();
-    todayDate.setHours(12, 0, 0, 0);
-
-    const daysUntil = Math.ceil(
-      (start - todayDate) / (1000 * 60 * 60 * 24)
-    );
-
-    let countdown = "";
-
-    if (todayDate > end) {
-      countdown = "📸 Trip completed";
-    } else if (todayDate >= start && todayDate <= end) {
-      countdown = "🎉 You're on vacation!";
-    } else if (daysUntil === 0) {
-      countdown = "✈️ Your trip starts today!";
-    } else if (daysUntil === 1) {
-      countdown = "✈️ 1 day to go!";
-    } else {
-      countdown = "✈️ " + daysUntil + " days to go!";
-    }
-
     const div = document.createElement("div");
     div.className = "trip";
 
     div.innerHTML = `
       <div class="trip-title">
-        🌎 ${trip.destination}
+        ✈️ ${trip.destination}
       </div>
 
       <p>
-        📅 ${formatDate(trip.startDate)}
-        –
-        ${formatDate(trip.endDate)}
+        📅 ${formatDate(trip.startDate)} – ${formatDate(trip.endDate)}
       </p>
 
       <p>
-        👨‍👩‍👧‍👦 ${trip.travelers}
-        ${trip.travelers == 1 ? "Traveler" : "Travelers"}
-      </p>
-
-      <p style="font-weight:bold;">
-        ${countdown}
+        👥 ${trip.travelers} travelers
       </p>
 
       <button
         class="primary"
-        onclick="openTrip(trips.find(t => t.id === ${trip.id}))">
+        onclick="openTripById(${trip.id})">
         Open Trip
-      </button>
-
-      <button
-        onclick="editTrip(${trip.id})">
-        ✏️ Edit
-      </button>
-
-      <button
-        onclick="deleteTrip(${trip.id})">
-        🗑️ Delete
       </button>
     `;
 
     tripsList.appendChild(div);
   });
+}
+
+function openTripById(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+  if (trip) {
+    openTrip(trip);
+  }
 }
 
 
