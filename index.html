@@ -251,9 +251,10 @@ function openTrip(trip) {
 
       <div class="card">
         <h2>🗓️ Itinerary</h2>
-        onclick="openItinerary(trips.find(t => t.id === ${trip.id}))"
-          Add Itinerary
-        </button>
+        <button class="primary"
+  onclick="openItinerary(trips.find(t => t.id === ${trip.id}))">
+  Add Itinerary
+</button>
       </div>
 
       <div class="card">
