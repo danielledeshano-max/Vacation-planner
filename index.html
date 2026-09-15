@@ -251,49 +251,49 @@ function openTrip(trip) {
 
       <div class="card">
         <h2>🗓️ Itinerary</h2>
-        <button class="primary" onclick="openItinerary(trips[0])">
+        onclick="openItinerary(trips.find(t => t.id === ${trip.id}))"
           Add Itinerary
         </button>
       </div>
 
       <div class="card">
         <h2>📍 Places & Map</h2>
-        <button class="primary" onclick="openPlaces(trips[0])">
+        onclick="openPlaces(trips.find(t => t.id === ${trip.id}))"
           Add Places
         </button>
       </div>
 
       <div class="card">
         <h2>🍽️ Restaurants</h2>
-        <button class="primary" onclick="openRestaurants(trips[0])">
+        onclick="openRestaurants(trips.find(t => t.id === ${trip.id}))"
           Add Restaurants
         </button>
       </div>
 
       <div class="card">
         <h2>🎟️ Activities</h2>
-        <button class="primary" onclick="openActivities(trips[0])">
+        onclick="openActivities(trips.find(t => t.id === ${trip.id}))"
           Add Activities
         </button>
       </div>
       
       <div class="card">
   <h2>🏨 Hotel</h2>
-  <button class="primary" onclick="openHotel(trips[0])">
+  onclick="openHotel(trips.find(t => t.id === ${trip.id}))"
     Hotel Details
   </button>
 </div>
 
       <div class="card">
         <h2>💰 Budget</h2>
-        <button class="primary" onclick="openBudget(trips[0])">
+        onclick="openBudget(trips.find(t => t.id === ${trip.id}))"
           Add Expense
         </button>
       </div>
 
       <div class="card">
         <h2>🧳 Packing List</h2>
-        <button class="primary" onclick="openPackingList(trips[0])">
+        onclick="openPackingList(trips.find(t => t.id === ${trip.id}))"
           Add Item
         </button>
       </div>
@@ -571,7 +571,7 @@ function openPlaces(trip) {
   document.body.innerHTML = `
     <header>
       <button
-        onclick="openTrip(trips[0])"
+        onclick="openTrip(trips.find(t => t.id === ${trip.id}))"
         style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
         ← Back
       </button>
@@ -714,7 +714,7 @@ function openRestaurants(trip) {
   document.body.innerHTML = `
     <header>
       <button
-        onclick="openTrip(trips[0])"
+        onclick="openTrip(trips.find(t => t.id === ${trip.id}))"
         style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
         ← Back
       </button>
@@ -889,7 +889,7 @@ function openActivities(trip) {
   document.body.innerHTML = `
     <header>
       <button
-        onclick="openTrip(trips[0])"
+        onclick="openTrip(trips.find(t => t.id === ${trip.id}))"
         style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
         ← Back
       </button>
@@ -1117,7 +1117,7 @@ const spent =
   document.body.innerHTML = `
     <header>
       <button
-        onclick="openTrip(trips[0])"
+        onclick="openTrip(trips.find(t => t.id === ${trip.id}))"
         style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
         ← Back
       </button>
@@ -1340,7 +1340,7 @@ function openHotel(trip) {
   document.body.innerHTML = `
     <header>
       <button
-        onclick="openTrip(trips[0])"
+        onclick="openTrip(trips.find(t => t.id === ${trip.id}))"
         style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
         ← Back
       </button>
@@ -1568,7 +1568,7 @@ function openPackingList(trip) {
   document.body.innerHTML = `
     <header>
       <button
-        onclick="openTrip(trips[0])"
+        onclick="openTrip(trips.find(t => t.id === ${trip.id}))"
         style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
         ← Back
       </button>
