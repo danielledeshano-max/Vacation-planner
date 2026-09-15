@@ -265,7 +265,7 @@ function openTrip(trip) {
 
       <div class="card">
         <h2>🍽️ Restaurants</h2>
-        <button class="primary" onclick="alert('Restaurants coming next!')">
+        <button class="primary" onclick="openRestaurants(trips[0])">
           Add Restaurants
         </button>
       </div>
@@ -700,6 +700,181 @@ function openPlaceInMaps(address) {
     "https://maps.apple.com/?q=" + address,
     "_blank"
   );
+}
+function openRestaurants(trip) {
+  if (!trip.restaurants) trip.restaurants = [];
+
+  document.body.innerHTML = `
+    <header>
+      <button
+        onclick="openTrip(trips[0])"
+        style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
+        ← Back
+      </button>
+
+      <h1>🍽️ Restaurants</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <h2>Saved Restaurants</h2>
+
+        ${trip.restaurants.length
+          ? trip.restaurants.map((restaurant, index) => `
+              <div class="trip">
+                <div class="trip-title">
+                  🍴 ${restaurant.name}
+                </div>
+
+                <p>📍 ${restaurant.address}</p>
+
+                ${restaurant.date
+                  ? `<p>📅 ${prettyDate(restaurant.date)}</p>`
+                  : ""
+                }
+
+                ${restaurant.time
+                  ? `<p>🕐 ${prettyTime(restaurant.time)}</p>`
+                  : ""
+                }
+
+                ${restaurant.note
+                  ? `<p>📝 ${restaurant.note}</p>`
+                  : ""
+                }
+
+                <button
+                  onclick="openPlaceInMaps('${encodeURIComponent(restaurant.address)}')">
+                  🗺️ Open in Maps
+                </button>
+
+                <button
+                  onclick="deleteRestaurant(${trip.id}, ${index})">
+                  🗑️ Delete
+                </button>
+              </div>
+            `).join("")
+          : '<p class="empty">No restaurants saved yet.</p>'
+        }
+
+        <button
+          class="primary"
+          onclick="addRestaurant(${trip.id})">
+          ➕ Add Restaurant
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function addRestaurant(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  document.body.innerHTML = `
+    <header>
+      <h1>🍽️ Add Restaurant</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+
+        <label>Restaurant name</label>
+        <input id="restaurantName"
+          placeholder="Example: Pier Market">
+
+        <label>Address</label>
+        <input id="restaurantAddress"
+          placeholder="Restaurant address">
+
+        <label>Reservation date</label>
+        <input
+          id="restaurantDate"
+          type="date"
+          min="${trip.startDate}"
+          max="${trip.endDate}"
+        >
+
+        <label>Reservation time</label>
+        <input id="restaurantTime" type="time">
+
+        <label>Notes</label>
+        <input id="restaurantNote"
+          placeholder="Example: Dinner reservation">
+
+        <button
+          class="primary"
+          onclick="saveRestaurant(${trip.id})">
+          Save Restaurant
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+function saveRestaurant(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  const name =
+    document.getElementById("restaurantName").value.trim();
+
+  const address =
+    document.getElementById("restaurantAddress").value.trim();
+
+  const date =
+    document.getElementById("restaurantDate").value;
+
+  const time =
+    document.getElementById("restaurantTime").value;
+
+  const note =
+    document.getElementById("restaurantNote").value.trim();
+
+  if (!name || !address) {
+    alert("Please enter the restaurant name and address.");
+    return;
+  }
+
+  if (!trip.restaurants) {
+    trip.restaurants = [];
+  }
+
+  trip.restaurants.push({
+    name: name,
+    address: address,
+    date: date,
+    time: time,
+    note: note
+  });
+
+  trip.restaurants.sort((a, b) =>
+    ((a.date || "") + (a.time || ""))
+      .localeCompare((b.date || "") + (b.time || ""))
+  );
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openRestaurants(trip);
+}
+
+function deleteRestaurant(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+
+  if (!confirm("Delete this restaurant?")) return;
+
+  trip.restaurants.splice(index, 1);
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openRestaurants(trip);
 }
   function formatDate(date) {
 
