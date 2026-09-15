@@ -1275,12 +1275,16 @@ function openBudget(trip) {
   (trip.transportation || [])
     .reduce((total, item) =>
       total + (parseFloat(item.cost) || 0), 0);
-
+const reservationTotal =
+  (trip.reservations || [])
+    .reduce((total, item) =>
+      total + (parseFloat(item.cost) || 0), 0);
 const spent =
   activityTotal +
   expenseTotal +
   hotelTotal +
-  transportationTotal;
+  transportationTotal +
+  reservationTotal;
   const remaining = trip.budget - spent;
 
   document.body.innerHTML = `
@@ -1383,6 +1387,33 @@ const spent =
       <strong>
         Transportation Total:
         $${transportationTotal.toFixed(2)}
+      </strong>
+    </p>
+  </div>
+` : ""}
+${reservationTotal > 0 ? `
+  <div class="card">
+    <h2>🎫 Reservations & Tickets</h2>
+
+    ${(trip.reservations || [])
+      .filter(item => parseFloat(item.cost))
+      .map(item => `
+        <div class="trip">
+          <strong>${item.name}</strong>
+
+          ${item.date
+            ? `<p>📅 ${prettyDate(item.date)}</p>`
+            : ""
+          }
+
+          <p>💵 $${Number(item.cost).toFixed(2)}</p>
+        </div>
+      `).join("")}
+
+    <p>
+      <strong>
+        Reservations Total:
+        $${reservationTotal.toFixed(2)}
       </strong>
     </p>
   </div>
@@ -2264,6 +2295,323 @@ function deleteTransportation(tripId, index) {
   );
 
   openTransportation(trip);
+}
+function openReservations(trip) {
+  if (!trip.reservations) trip.reservations = [];
+
+  document.body.innerHTML = `
+    <header>
+      <button
+        onclick="openTripById(${trip.id})"
+        style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
+        ← Back
+      </button>
+
+      <h1>🎫 Reservations & Tickets</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <h2>My Reservations</h2>
+
+        ${trip.reservations.length
+          ? trip.reservations.map((item, index) => `
+              <div class="trip">
+
+                <div class="trip-title">
+                  🎫 ${item.name}
+                </div>
+
+                ${item.date
+                  ? `<p>📅 ${prettyDate(item.date)}</p>`
+                  : ""
+                }
+
+                ${item.time
+                  ? `<p>🕐 ${prettyTime(item.time)}</p>`
+                  : ""
+                }
+
+                ${item.confirmation
+                  ? `<p>🔑 Confirmation: ${item.confirmation}</p>`
+                  : ""
+                }
+
+                ${item.cost
+                  ? `<p>💵 $${Number(item.cost).toFixed(2)}</p>`
+                  : ""
+                }
+
+                ${item.note
+                  ? `<p>📝 ${item.note}</p>`
+                  : ""
+                }
+
+                <button
+                  onclick="editReservation(${trip.id}, ${index})">
+                  ✏️ Edit
+                </button>
+
+                <button
+                  onclick="deleteReservation(${trip.id}, ${index})">
+                  🗑️ Delete
+                </button>
+
+              </div>
+            `).join("")
+          : '<p class="empty">No reservations or tickets saved yet.</p>'
+        }
+
+        <button
+          class="primary"
+          onclick="addReservation(${trip.id})">
+          ➕ Add Reservation
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+
+function addReservation(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  document.body.innerHTML = `
+    <header>
+      <h1>🎫 Add Reservation</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+
+        <label>Reservation / Ticket name</label>
+        <input
+          id="reservationName"
+          placeholder="Example: Oakland Zoo Tickets"
+        >
+
+        <label>Date</label>
+        <input
+          id="reservationDate"
+          type="date"
+          min="${trip.startDate}"
+          max="${trip.endDate}"
+        >
+
+        <label>Time</label>
+        <input
+          id="reservationTime"
+          type="time"
+        >
+
+        <label>Confirmation number</label>
+        <input
+          id="reservationConfirmation"
+          placeholder="Optional"
+        >
+
+        <label>Total cost</label>
+        <input
+          id="reservationCost"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="0.00"
+        >
+
+        <label>Notes</label>
+        <input
+          id="reservationNote"
+          placeholder="Tickets, entrance instructions, etc."
+        >
+
+        <button
+          class="primary"
+          onclick="saveReservation(${trip.id})">
+          Save Reservation
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+
+function saveReservation(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  const name =
+    document.getElementById("reservationName").value.trim();
+
+  const date =
+    document.getElementById("reservationDate").value;
+
+  const time =
+    document.getElementById("reservationTime").value;
+
+  const confirmation =
+    document.getElementById("reservationConfirmation").value.trim();
+
+  const cost =
+    document.getElementById("reservationCost").value;
+
+  const note =
+    document.getElementById("reservationNote").value.trim();
+
+  if (!name) {
+    alert("Please enter a reservation or ticket name.");
+    return;
+  }
+
+  if (!trip.reservations) {
+    trip.reservations = [];
+  }
+
+  trip.reservations.push({
+    name,
+    date,
+    time,
+    confirmation,
+    cost,
+    note
+  });
+
+  sortReservations(trip);
+  saveTrips();
+
+  openReservations(trip);
+}
+
+
+function editReservation(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+  const item = trip.reservations[index];
+
+  document.body.innerHTML = `
+    <header>
+      <h1>✏️ Edit Reservation</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+
+        <label>Reservation / Ticket name</label>
+        <input
+          id="reservationName"
+          value="${item.name || ""}"
+        >
+
+        <label>Date</label>
+        <input
+          id="reservationDate"
+          type="date"
+          min="${trip.startDate}"
+          max="${trip.endDate}"
+          value="${item.date || ""}"
+        >
+
+        <label>Time</label>
+        <input
+          id="reservationTime"
+          type="time"
+          value="${item.time || ""}"
+        >
+
+        <label>Confirmation number</label>
+        <input
+          id="reservationConfirmation"
+          value="${item.confirmation || ""}"
+        >
+
+        <label>Total cost</label>
+        <input
+          id="reservationCost"
+          type="number"
+          min="0"
+          step="0.01"
+          value="${item.cost || ""}"
+        >
+
+        <label>Notes</label>
+        <input
+          id="reservationNote"
+          value="${item.note || ""}"
+        >
+
+        <button
+          class="primary"
+          onclick="saveEditedReservation(${trip.id}, ${index})">
+          Save Changes
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+
+function saveEditedReservation(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+
+  const name =
+    document.getElementById("reservationName").value.trim();
+
+  if (!name) {
+    alert("Please enter a reservation or ticket name.");
+    return;
+  }
+
+  trip.reservations[index] = {
+    name,
+    date: document.getElementById("reservationDate").value,
+    time: document.getElementById("reservationTime").value,
+    confirmation:
+      document.getElementById("reservationConfirmation").value.trim(),
+    cost:
+      document.getElementById("reservationCost").value,
+    note:
+      document.getElementById("reservationNote").value.trim()
+  };
+
+  sortReservations(trip);
+  saveTrips();
+
+  openReservations(trip);
+}
+
+
+function deleteReservation(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+
+  if (!confirm("Delete this reservation?")) return;
+
+  trip.reservations.splice(index, 1);
+
+  saveTrips();
+
+  openReservations(trip);
+}
+
+
+function sortReservations(trip) {
+  trip.reservations.sort((a, b) =>
+    ((a.date || "") + (a.time || ""))
+      .localeCompare(
+        (b.date || "") + (b.time || "")
+      )
+  );
+}
+
+
+function saveTrips() {
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
 }
   function formatDate(date) {
 
