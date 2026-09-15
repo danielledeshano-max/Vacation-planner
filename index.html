@@ -251,7 +251,7 @@ function openTrip(trip) {
 
       <div class="card">
         <h2>🗓️ Itinerary</h2>
-        <button class="primary" onclick="alert('Itinerary coming next!')">
+        <button class="primary" onclick="openItinerary(trip)">
           Add Itinerary
         </button>
       </div>
@@ -293,6 +293,9 @@ function openTrip(trip) {
 
     </div>
   `;
+}
+ function openItinerary(trip) {
+  alert("Your day-by-day itinerary will go here!");
 }
   function formatDate(date) {
 
