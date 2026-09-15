@@ -331,12 +331,7 @@ function openTrip(trip) {
 dateInput.type = "date";
 dateInput.min = trips.find(t => t.id === tripId).startDate;
 dateInput.max = trips.find(t => t.id === tripId).endDate;
-    dateInput.style.display = "block";
-dateInput.style.position = "fixed";
-dateInput.style.top = "50%";
-dateInput.style.left = "50%";
-dateInput.style.transform = "translate(-50%, -50%)";
-dateInput.style.zIndex = "9999";
+ dateInput.style.opacity = "0";   
 document.body.appendChild(dateInput);
 dateInput.showPicker();
     dateInput.onchange = function() {
