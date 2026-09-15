@@ -279,7 +279,7 @@ function openTrip(trip) {
 
       <div class="card">
         <h2>💰 Budget</h2>
-        <button class="primary" onclick="alert('Budget coming next!')">
+        <button class="primary" onclick="openBudget(trips[0])">
           Add Expense
         </button>
       </div>
@@ -1087,6 +1087,232 @@ function deleteActivity(tripId, index) {
   );
 
   openActivities(trip);
+}
+function openBudget(trip) {
+  if (!trip.expenses) trip.expenses = [];
+  if (!trip.budget) trip.budget = 0;
+
+  const activityTotal = (trip.tripActivities || [])
+    .reduce((total, activity) =>
+      total + (parseFloat(activity.cost) || 0), 0);
+
+  const expenseTotal = trip.expenses
+    .reduce((total, expense) =>
+      total + (parseFloat(expense.amount) || 0), 0);
+
+  const spent = activityTotal + expenseTotal;
+  const remaining = trip.budget - spent;
+
+  document.body.innerHTML = `
+    <header>
+      <button
+        onclick="openTrip(trips[0])"
+        style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
+        ← Back
+      </button>
+
+      <h1>💰 Trip Budget</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+
+      <div class="card">
+        <h2>Budget Summary</h2>
+
+        <p><strong>💵 Budget:</strong>
+          $${Number(trip.budget).toFixed(2)}
+        </p>
+
+        <p><strong>💳 Spent:</strong>
+          $${spent.toFixed(2)}
+        </p>
+
+        <p><strong>💰 Remaining:</strong>
+          $${remaining.toFixed(2)}
+        </p>
+
+        <button
+          class="primary"
+          onclick="setTripBudget(${trip.id})">
+          Set Trip Budget
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>Expenses</h2>
+
+        ${trip.expenses.length
+          ? trip.expenses.map((expense, index) => `
+              <div class="trip">
+                <div class="trip-title">
+                  ${expense.category}
+                </div>
+
+                <p>${expense.description}</p>
+
+                <p>
+                  💵 $${Number(expense.amount).toFixed(2)}
+                </p>
+
+                <button
+                  onclick="deleteExpense(${trip.id}, ${index})">
+                  🗑️ Delete
+                </button>
+              </div>
+            `).join("")
+          : '<p class="empty">No extra expenses yet.</p>'
+        }
+
+        <button
+          class="primary"
+          onclick="addExpense(${trip.id})">
+          ➕ Add Expense
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>🎟️ Activity Costs</h2>
+
+        ${(trip.tripActivities || [])
+          .filter(activity => parseFloat(activity.cost))
+          .map(activity => `
+            <div class="trip">
+              <strong>${activity.name}</strong>
+              <p>💵 $${Number(activity.cost).toFixed(2)}</p>
+            </div>
+          `).join("")
+          || '<p class="empty">No activity costs yet.</p>'
+        }
+      </div>
+
+    </div>
+  `;
+}
+
+function setTripBudget(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  const amount = prompt(
+    "What is your total trip budget?",
+    trip.budget || ""
+  );
+
+  if (amount === null) return;
+
+  const number = parseFloat(amount);
+
+  if (isNaN(number) || number < 0) {
+    alert("Please enter a valid amount.");
+    return;
+  }
+
+  trip.budget = number;
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openBudget(trip);
+}
+
+function addExpense(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  document.body.innerHTML = `
+    <header>
+      <h1>💳 Add Expense</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+
+        <label>Category</label>
+        <select id="expenseCategory"
+          style="width:100%;padding:14px;margin:7px 0 15px;border:1px solid #d1d5db;border-radius:12px;font-size:16px;">
+          <option>🏨 Hotel</option>
+          <option>🍽️ Food</option>
+          <option>🚗 Transportation</option>
+          <option>🎟️ Tickets</option>
+          <option>🛍️ Shopping</option>
+          <option>⛽ Gas</option>
+          <option>💵 Other</option>
+        </select>
+
+        <label>Description</label>
+        <input
+          id="expenseDescription"
+          placeholder="Example: Hyatt hotel"
+        >
+
+        <label>Amount</label>
+        <input
+          id="expenseAmount"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="0.00"
+        >
+
+        <button
+          class="primary"
+          onclick="saveExpense(${trip.id})">
+          Save Expense
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+function saveExpense(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  const category =
+    document.getElementById("expenseCategory").value;
+
+  const description =
+    document.getElementById("expenseDescription").value.trim();
+
+  const amount =
+    parseFloat(document.getElementById("expenseAmount").value);
+
+  if (!description || isNaN(amount) || amount < 0) {
+    alert("Please enter a description and valid amount.");
+    return;
+  }
+
+  if (!trip.expenses) trip.expenses = [];
+
+  trip.expenses.push({
+    category: category,
+    description: description,
+    amount: amount
+  });
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openBudget(trip);
+}
+
+function deleteExpense(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+
+  if (!confirm("Delete this expense?")) return;
+
+  trip.expenses.splice(index, 1);
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openBudget(trip);
 }
   function formatDate(date) {
 
