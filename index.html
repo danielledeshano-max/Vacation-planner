@@ -465,13 +465,59 @@ function openTrip(trip) {
 }
 function openItinerary(trip) {
 
-  const activities = trip.activities || [];
+  const activities = [
+  ...(trip.activities || []).map((item, index) => ({
+    ...item,
+    source: "itinerary",
+    sourceIndex: index,
+    icon: "📌"
+  })),
 
-  activities.sort((a, b) =>
-    ((a.date || "") + (a.time || ""))
-      .localeCompare((b.date || "") + (b.time || ""))
-  );
+  ...(trip.tripActivities || []).map(item => ({
+    name: item.name,
+    date: item.date,
+    time: item.time,
+    note: item.note,
+    icon: "🎯",
+    source: "activity"
+  })),
 
+  ...(trip.reservations || []).map(item => ({
+    name: item.name,
+    date: item.date,
+    time: item.time,
+    note: item.note,
+    icon: "🎫",
+    source: "reservation"
+  })),
+
+  ...(trip.restaurants || [])
+    .filter(item => item.date)
+    .map(item => ({
+      name: item.name,
+      date: item.date,
+      time: item.time,
+      note: item.note,
+      icon: "🍽️",
+      source: "restaurant"
+    })),
+
+  ...(trip.transportation || []).map(item => ({
+    name: `${item.type} ${item.company || ""}`.trim(),
+    date: item.date,
+    time: item.departureTime,
+    note: item.from && item.to
+      ? `${item.from} → ${item.to}`
+      : item.note,
+    icon: "✈️",
+    source: "transportation"
+  }))
+];
+
+activities.sort((a, b) =>
+  ((a.date || "") + (a.time || ""))
+    .localeCompare((b.date || "") + (b.time || ""))
+);
   document.body.innerHTML = `
     <header>
       <button
@@ -493,32 +539,38 @@ function openItinerary(trip) {
 
           ${activities.length > 0
             ? activities.map((item, index) => `
-              
-              <div class="trip">
+    <div class="trip">
 
-                <div class="trip-title">
-                  ${prettyDate(item.date)}
-                </div>
+      <div class="trip-title">
+        ${item.icon || "📌"} ${prettyDate(item.date)}
+      </div>
 
-                <p>
-                  🕐 ${prettyTime(item.time)}
-                </p>
+      <p>
+        🕐 ${prettyTime(item.time)}
+      </p>
 
-                <p>
-                  ${item.plan}
-                </p>
+      <p>
+        <strong>${item.plan || item.name || ""}</strong>
+      </p>
 
-                <button
-                  onclick="editItineraryItem(${trip.id}, ${index})">
-                  ✏️ Edit
-                </button>
+      ${item.note
+        ? `<p>📝 ${item.note}</p>`
+        : ""
+      }
 
-                <button
-                  onclick="deleteItineraryItem(${trip.id}, ${index})">
-                  🗑️ Delete
-                </button>
+      ${item.source === "itinerary" ? `
+        <button
+          onclick="editItineraryItem(${trip.id}, ${item.sourceIndex})">
+          ✏️ Edit
+        </button>
 
-              </div>
+        <button
+          onclick="deleteItineraryItem(${trip.id}, ${item.sourceIndex})">
+          🗑️ Delete
+        </button>
+      ` : ""}
+
+    </div>
 
             `).join("")
             : '<p class="empty">No plans added yet.</p>'
