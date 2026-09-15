@@ -422,7 +422,13 @@ function openTrip(trip) {
     Add Activities
   </button>
 </div>
-      
+      <div class="card">
+  <h2>✈️ Transportation</h2>
+  <button class="primary"
+    onclick="openTransportation(trips.find(t => t.id === ${trip.id}))">
+    Transportation Details
+  </button>
+</div>
       <div class="card">
   <h2>🏨 Hotel</h2>
   <button class="primary"
@@ -1258,9 +1264,16 @@ function openBudget(trip) {
 
   const hotelTotal =
   parseFloat(trip.hotel?.cost) || 0;
+  const transportationTotal =
+  (trip.transportation || [])
+    .reduce((total, item) =>
+      total + (parseFloat(item.cost) || 0), 0);
 
 const spent =
-  activityTotal + expenseTotal + hotelTotal;
+  activityTotal +
+  expenseTotal +
+  hotelTotal +
+  transportationTotal;
   const remaining = trip.budget - spent;
 
   document.body.innerHTML = `
@@ -1928,6 +1941,291 @@ function deletePackingItem(tripId, index) {
   );
 
   openPackingList(trip);
+}
+function openTransportation(trip) {
+  if (!trip.transportation) trip.transportation = [];
+
+  document.body.innerHTML = `
+    <header>
+      <button
+        onclick="openTripById(${trip.id})"
+        style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
+        ← Back
+      </button>
+
+      <h1>✈️ Transportation</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <h2>My Transportation</h2>
+
+        ${trip.transportation.length
+          ? trip.transportation.map((item, index) => `
+              <div class="trip">
+
+                <div class="trip-title">
+                  ${item.type} ${item.company || ""}
+                </div>
+
+                ${item.number
+                  ? `<p>🎫 ${item.number}</p>`
+                  : ""
+                }
+
+                ${item.date
+                  ? `<p>📅 ${prettyDate(item.date)}</p>`
+                  : ""
+                }
+
+                ${item.departureTime
+                  ? `<p>🕐 Departure: ${prettyTime(item.departureTime)}</p>`
+                  : ""
+                }
+
+                ${item.from
+                  ? `<p>📍 From: ${item.from}</p>`
+                  : ""
+                }
+
+                ${item.arrivalTime
+                  ? `<p>🕐 Arrival: ${prettyTime(item.arrivalTime)}</p>`
+                  : ""
+                }
+
+                ${item.to
+                  ? `<p>📍 To: ${item.to}</p>`
+                  : ""
+                }
+
+                ${item.confirmation
+                  ? `<p>🔑 Confirmation: ${item.confirmation}</p>`
+                  : ""
+                }
+
+                ${item.cost
+                  ? `<p>💵 $${Number(item.cost).toFixed(2)}</p>`
+                  : ""
+                }
+
+                ${item.note
+                  ? `<p>📝 ${item.note}</p>`
+                  : ""
+                }
+
+                <button
+                  onclick="deleteTransportation(${trip.id}, ${index})">
+                  🗑️ Delete
+                </button>
+
+              </div>
+            `).join("")
+          : '<p class="empty">No transportation added yet.</p>'
+        }
+
+        <button
+          class="primary"
+          onclick="addTransportation(${trip.id})">
+          ➕ Add Transportation
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+
+function addTransportation(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  document.body.innerHTML = `
+    <header>
+      <h1>✈️ Add Transportation</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+
+        <label>Transportation type</label>
+        <select
+          id="transportType"
+          style="width:100%;padding:14px;margin:7px 0 15px;border:1px solid #d1d5db;border-radius:12px;font-size:16px;">
+          <option>✈️ Flight</option>
+          <option>🚆 Train</option>
+          <option>🚗 Rental Car</option>
+          <option>🚌 Bus</option>
+          <option>⛴️ Ferry</option>
+          <option>🚕 Taxi / Rideshare</option>
+          <option>🚙 Other</option>
+        </select>
+
+        <label>Airline / Company</label>
+        <input
+          id="transportCompany"
+          placeholder="Example: Delta or Amtrak"
+        >
+
+        <label>Flight / Train / Reservation number</label>
+        <input
+          id="transportNumber"
+          placeholder="Example: DL1234"
+        >
+
+        <label>Date</label>
+        <input
+          id="transportDate"
+          type="date"
+          min="${trip.startDate}"
+          max="${trip.endDate}"
+        >
+
+        <label>Departure time</label>
+        <input
+          id="transportDepartureTime"
+          type="time"
+        >
+
+        <label>Leaving from</label>
+        <input
+          id="transportFrom"
+          placeholder="Example: Detroit Metro Airport"
+        >
+
+        <label>Arrival time</label>
+        <input
+          id="transportArrivalTime"
+          type="time"
+        >
+
+        <label>Going to</label>
+        <input
+          id="transportTo"
+          placeholder="Example: San Francisco Airport"
+        >
+
+        <label>Confirmation number</label>
+        <input
+          id="transportConfirmation"
+          placeholder="Optional"
+        >
+
+        <label>Total cost</label>
+        <input
+          id="transportCost"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="0.00"
+        >
+
+        <label>Notes</label>
+        <input
+          id="transportNote"
+          placeholder="Seats, baggage, parking, etc."
+        >
+
+        <button
+          class="primary"
+          onclick="saveTransportation(${trip.id})">
+          Save Transportation
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+
+function saveTransportation(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  const type =
+    document.getElementById("transportType").value;
+
+  const company =
+    document.getElementById("transportCompany").value.trim();
+
+  const number =
+    document.getElementById("transportNumber").value.trim();
+
+  const date =
+    document.getElementById("transportDate").value;
+
+  const departureTime =
+    document.getElementById("transportDepartureTime").value;
+
+  const from =
+    document.getElementById("transportFrom").value.trim();
+
+  const arrivalTime =
+    document.getElementById("transportArrivalTime").value;
+
+  const to =
+    document.getElementById("transportTo").value.trim();
+
+  const confirmation =
+    document.getElementById("transportConfirmation").value.trim();
+
+  const cost =
+    document.getElementById("transportCost").value;
+
+  const note =
+    document.getElementById("transportNote").value.trim();
+
+  if (!date) {
+    alert("Please choose a date.");
+    return;
+  }
+
+  if (!trip.transportation) {
+    trip.transportation = [];
+  }
+
+  trip.transportation.push({
+    type,
+    company,
+    number,
+    date,
+    departureTime,
+    from,
+    arrivalTime,
+    to,
+    confirmation,
+    cost,
+    note
+  });
+
+  trip.transportation.sort((a, b) =>
+    ((a.date || "") + (a.departureTime || ""))
+      .localeCompare(
+        (b.date || "") + (b.departureTime || "")
+      )
+  );
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openTransportation(trip);
+}
+
+
+function deleteTransportation(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+
+  if (!confirm("Delete this transportation?")) return;
+
+  trip.transportation.splice(index, 1);
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openTransportation(trip);
 }
   function formatDate(date) {
 
