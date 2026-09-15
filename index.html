@@ -327,8 +327,21 @@ function openTrip(trip) {
   `;
 }
   function addItineraryItem(tripId) {
-  const date = prompt("What date is this plan for?");
-  if (!date) return;
+  const dateInput = document.createElement("input");
+dateInput.type = "date";
+dateInput.min = trips.find(t => t.id === tripId).startDate;
+dateInput.max = trips.find(t => t.id === tripId).endDate;
+    dateInput.style.display = "block";
+dateInput.style.position = "fixed";
+dateInput.style.top = "50%";
+dateInput.style.left = "50%";
+dateInput.style.transform = "translate(-50%, -50%)";
+dateInput.style.zIndex = "9999";
+document.body.appendChild(dateInput);
+dateInput.showPicker();
+    dateInput.onchange = function() {
+  const date = dateInput.value;
+  dateInput.remove();
 
   const plan = prompt("What would you like to do?");
   if (!plan) return;
@@ -353,6 +366,7 @@ if (!time) return;
   );
 
   openItinerary(trip);
+     }; 
 }
   function formatDate(date) {
 
