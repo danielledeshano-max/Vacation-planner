@@ -294,9 +294,23 @@ function openTrip(trip) {
     </div>
   `;
 }
- function openItinerary(trip) {
+function openItinerary(trip) {
+
+  const activities = trip.activities || [];
+
+  activities.sort((a, b) =>
+    ((a.date || "") + (a.time || ""))
+      .localeCompare((b.date || "") + (b.time || ""))
+  );
+
   document.body.innerHTML = `
     <header>
+      <button
+        onclick="openTrip(trips.find(t => t.id === ${trip.id}))"
+        style="background:rgba(255,255,255,.2); color:white; margin-bottom:15px;">
+        ← Back
+      </button>
+
       <h1>🗓️ ${trip.destination} Itinerary</h1>
       <p>${formatDate(trip.startDate)} – ${formatDate(trip.endDate)}</p>
     </header>
@@ -305,26 +319,176 @@ function openTrip(trip) {
 
       <div class="card">
         <h2>📅 Day-by-Day Plans</h2>
+
         <div id="itineraryList">
-        ${trip.activities && trip.activities.length > 0
-  ? trip.activities.map(item => `
-      <div class="trip">
-        <strong>📅 ${item.date}</strong>
-        <p>🕐 ${item.time || "No time set"}</p>
-        <p>${item.plan}</p>
-      </div>
-    `).join("")
-  : '<p class="empty">No plans added yet.</p>'
-}
+
+          ${activities.length > 0
+            ? activities.map((item, index) => `
+              
+              <div class="trip">
+
+                <div class="trip-title">
+                  ${prettyDate(item.date)}
+                </div>
+
+                <p>
+                  🕐 ${prettyTime(item.time)}
+                </p>
+
+                <p>
+                  ${item.plan}
+                </p>
+
+                <button
+                  onclick="editItineraryItem(${trip.id}, ${index})">
+                  ✏️ Edit
+                </button>
+
+                <button
+                  onclick="deleteItineraryItem(${trip.id}, ${index})">
+                  🗑️ Delete
+                </button>
+
+              </div>
+
+            `).join("")
+            : '<p class="empty">No plans added yet.</p>'
+          }
+
         </div>
 
-        <button class="primary" onclick="addItineraryItem(${trip.id})">
+        <button
+          class="primary"
+          onclick="addItineraryItem(${trip.id})">
           ➕ Add a Plan
         </button>
+
       </div>
 
     </div>
   `;
+}
+function prettyDate(date) {
+  if (!date) return "Date not set";
+
+  const d = new Date(date + "T12:00:00");
+
+  return d.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "short",
+    day: "numeric"
+  });
+}
+
+function prettyTime(time) {
+  if (!time) return "No time set";
+
+  const parts = time.split(":");
+  let hour = Number(parts[0]);
+  const minutes = parts[1];
+
+  const ampm = hour >= 12 ? "PM" : "AM";
+
+  hour = hour % 12;
+  hour = hour || 12;
+
+  return hour + ":" + minutes + " " + ampm;
+}
+
+function deleteItineraryItem(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+
+  if (!confirm("Delete this plan?")) return;
+
+  trip.activities.splice(index, 1);
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openItinerary(trip);
+}
+
+function editItineraryItem(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+  const item = trip.activities[index];
+
+  document.body.innerHTML = `
+    <header>
+      <h1>✏️ Edit Plan</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+
+        <label>Date</label>
+        <input
+          id="editDate"
+          type="date"
+          min="${trip.startDate}"
+          max="${trip.endDate}"
+          value="${item.date || ""}"
+        >
+
+        <label>Time</label>
+        <input
+          id="editTime"
+          type="time"
+          value="${item.time || ""}"
+        >
+
+        <label>What are you doing?</label>
+        <input
+          id="editPlan"
+          value="${item.plan || ""}"
+        >
+
+        <button
+          class="primary"
+          onclick="saveEditedItineraryItem(${trip.id}, ${index})">
+          Save Changes
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+function saveEditedItineraryItem(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+
+  const date =
+    document.getElementById("editDate").value;
+
+  const time =
+    document.getElementById("editTime").value;
+
+  const plan =
+    document.getElementById("editPlan").value.trim();
+
+  if (!date || !time || !plan) {
+    alert("Please choose a date, time, and activity.");
+    return;
+  }
+
+  trip.activities[index] = {
+    date: date,
+    time: time,
+    plan: plan
+  };
+
+  trip.activities.sort((a, b) =>
+    (a.date + a.time).localeCompare(b.date + b.time)
+  );
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openItinerary(trip);
 }
   function addItineraryItem(tripId) {
   const trip = trips.find(t => t.id === tripId);
