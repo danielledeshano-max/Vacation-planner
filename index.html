@@ -195,7 +195,7 @@ function createTrip() {
 }
 
 function displayTrips() {
-  const tripsList = document.getElementById("tripsList");
+  const tripsList = document.getElementById("tripList");
 
   if (trips.length === 0) {
     tripsList.innerHTML =
@@ -1908,7 +1908,6 @@ function deletePackingItem(tripId, index) {
 
   return `${parts[1]}/${parts[2]}/${parts[0]}`;
 }
-alert("Saved trips found: " + trips.length);
 displayTrips();
 
 </script>
