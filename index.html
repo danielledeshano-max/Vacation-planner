@@ -276,6 +276,13 @@ function openTrip(trip) {
           Add Activities
         </button>
       </div>
+      
+      <div class="card">
+  <h2>🏨 Hotel</h2>
+  <button class="primary" onclick="openHotel(trips[0])">
+    Hotel Details
+  </button>
+</div>
 
       <div class="card">
         <h2>💰 Budget</h2>
@@ -1100,7 +1107,11 @@ function openBudget(trip) {
     .reduce((total, expense) =>
       total + (parseFloat(expense.amount) || 0), 0);
 
-  const spent = activityTotal + expenseTotal;
+  const hotelTotal =
+  parseFloat(trip.hotel?.cost) || 0;
+
+const spent =
+  activityTotal + expenseTotal + hotelTotal;
   const remaining = trip.budget - spent;
 
   document.body.innerHTML = `
@@ -1173,6 +1184,15 @@ function openBudget(trip) {
 
       <div class="card">
         <h2>🎟️ Activity Costs</h2>
+        ${hotelTotal > 0 ? `
+  <div class="card">
+    <h2>🏨 Hotel Cost</h2>
+    <div class="trip">
+      <strong>${trip.hotel.name}</strong>
+      <p>💵 $${hotelTotal.toFixed(2)}</p>
+    </div>
+  </div>
+` : ""}
 
         ${(trip.tripActivities || [])
           .filter(activity => parseFloat(activity.cost))
@@ -1313,6 +1333,220 @@ function deleteExpense(tripId, index) {
   );
 
   openBudget(trip);
+}
+function openHotel(trip) {
+  const hotel = trip.hotel || {};
+
+  document.body.innerHTML = `
+    <header>
+      <button
+        onclick="openTrip(trips[0])"
+        style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
+        ← Back
+      </button>
+
+      <h1>🏨 Hotel</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+
+      ${hotel.name ? `
+        <div class="card">
+          <h2>${hotel.name}</h2>
+
+          <p>📍 ${hotel.address || "No address"}</p>
+
+          <p>
+            📅 Check-in:
+            ${hotel.checkIn ? prettyDate(hotel.checkIn) : "Not set"}
+            ${hotel.checkInTime ? " • " + prettyTime(hotel.checkInTime) : ""}
+          </p>
+
+          <p>
+            📅 Check-out:
+            ${hotel.checkOut ? prettyDate(hotel.checkOut) : "Not set"}
+            ${hotel.checkOutTime ? " • " + prettyTime(hotel.checkOutTime) : ""}
+          </p>
+
+          ${hotel.confirmation
+            ? `<p>🔑 Confirmation: ${hotel.confirmation}</p>`
+            : ""
+          }
+
+          ${hotel.cost
+            ? `<p>💵 Hotel total: $${Number(hotel.cost).toFixed(2)}</p>`
+            : ""
+          }
+
+          ${hotel.note
+            ? `<p>📝 ${hotel.note}</p>`
+            : ""
+          }
+
+          ${hotel.address ? `
+            <button
+              onclick="openPlaceInMaps('${encodeURIComponent(hotel.address)}')">
+              🗺️ Open in Maps
+            </button>
+          ` : ""}
+
+          <button
+            class="primary"
+            onclick="editHotel(${trip.id})">
+            ✏️ Edit Hotel
+          </button>
+        </div>
+      ` : `
+        <div class="card">
+          <p class="empty">No hotel added yet.</p>
+
+          <button
+            class="primary"
+            onclick="editHotel(${trip.id})">
+            ➕ Add Hotel
+          </button>
+        </div>
+      `}
+
+    </div>
+  `;
+}
+
+function editHotel(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+  const hotel = trip.hotel || {};
+
+  document.body.innerHTML = `
+    <header>
+      <h1>🏨 Hotel Details</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+
+        <label>Hotel name</label>
+        <input
+          id="hotelName"
+          value="${hotel.name || ""}"
+          placeholder="Example: Hyatt Place"
+        >
+
+        <label>Address</label>
+        <input
+          id="hotelAddress"
+          value="${hotel.address || ""}"
+          placeholder="Hotel address"
+        >
+
+        <label>Check-in date</label>
+        <input
+          id="hotelCheckIn"
+          type="date"
+          value="${hotel.checkIn || trip.startDate}"
+        >
+
+        <label>Check-in time</label>
+        <input
+          id="hotelCheckInTime"
+          type="time"
+          value="${hotel.checkInTime || ""}"
+        >
+
+        <label>Check-out date</label>
+        <input
+          id="hotelCheckOut"
+          type="date"
+          value="${hotel.checkOut || trip.endDate}"
+        >
+
+        <label>Check-out time</label>
+        <input
+          id="hotelCheckOutTime"
+          type="time"
+          value="${hotel.checkOutTime || ""}"
+        >
+
+        <label>Confirmation number</label>
+        <input
+          id="hotelConfirmation"
+          value="${hotel.confirmation || ""}"
+          placeholder="Optional"
+        >
+
+        <label>Total hotel cost</label>
+        <input
+          id="hotelCost"
+          type="number"
+          min="0"
+          step="0.01"
+          value="${hotel.cost || ""}"
+          placeholder="0.00"
+        >
+
+        <label>Notes</label>
+        <input
+          id="hotelNote"
+          value="${hotel.note || ""}"
+          placeholder="Parking, breakfast, room info, etc."
+        >
+
+        <button
+          class="primary"
+          onclick="saveHotel(${trip.id})">
+          Save Hotel
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+function saveHotel(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  const name =
+    document.getElementById("hotelName").value.trim();
+
+  if (!name) {
+    alert("Please enter the hotel name.");
+    return;
+  }
+
+  trip.hotel = {
+    name: name,
+    address:
+      document.getElementById("hotelAddress").value.trim(),
+
+    checkIn:
+      document.getElementById("hotelCheckIn").value,
+
+    checkInTime:
+      document.getElementById("hotelCheckInTime").value,
+
+    checkOut:
+      document.getElementById("hotelCheckOut").value,
+
+    checkOutTime:
+      document.getElementById("hotelCheckOutTime").value,
+
+    confirmation:
+      document.getElementById("hotelConfirmation").value.trim(),
+
+    cost:
+      document.getElementById("hotelCost").value,
+
+    note:
+      document.getElementById("hotelNote").value.trim()
+  };
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openHotel(trip);
 }
   function formatDate(date) {
 
