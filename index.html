@@ -306,7 +306,15 @@ function openTrip(trip) {
       <div class="card">
         <h2>📅 Day-by-Day Plans</h2>
         <div id="itineraryList">
-          <p class="empty">No plans added yet.</p>
+        ${trip.activities && trip.activities.length > 0
+  ? trip.activities.map(item => `
+      <div class="trip">
+        <strong>📅 ${item.date}</strong>
+        <p>${item.plan}</p>
+      </div>
+    `).join("")
+  : '<p class="empty">No plans added yet.</p>'
+}
         </div>
 
         <button class="primary" onclick="addItineraryItem(${trip.id})">
@@ -324,7 +332,23 @@ function openTrip(trip) {
   const plan = prompt("What would you like to do?");
   if (!plan) return;
 
-  alert("Plan added: " + date + " — " + plan);
+    const trip = trips.find(t => t.id === tripId);
+
+  if (!trip.activities) {
+    trip.activities = [];
+  }
+
+  trip.activities.push({
+    date: date,
+    plan: plan
+  });
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openItinerary(trip);
 }
   function formatDate(date) {
 
