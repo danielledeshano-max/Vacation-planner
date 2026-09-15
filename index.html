@@ -206,6 +206,26 @@ function displayTrips() {
   tripsList.innerHTML = "";
 
   trips.forEach(trip => {
+    const start = new Date(trip.startDate + "T12:00:00");
+const end = new Date(trip.endDate + "T12:00:00");
+const today = new Date();
+today.setHours(12, 0, 0, 0);
+
+const daysUntil = Math.ceil(
+  (start - today) / (1000 * 60 * 60 * 24)
+);
+
+let countdown;
+
+if (today > end) {
+  countdown = "📸 Trip completed";
+} else if (today >= start) {
+  countdown = "🎉 You're on vacation!";
+} else if (daysUntil === 1) {
+  countdown = "✈️ 1 day to go!";
+} else {
+  countdown = "✈️ " + daysUntil + " days to go!";
+}
     const div = document.createElement("div");
     div.className = "trip";
 
@@ -221,12 +241,21 @@ function displayTrips() {
       <p>
         👥 ${trip.travelers} travelers
       </p>
-
+<p style="font-weight:bold;">
+  ${countdown}
+</p>
       <button
         class="primary"
         onclick="openTripById(${trip.id})">
         Open Trip
       </button>
+      <button onclick="editTrip(${trip.id})">
+  ✏️ Edit Trip
+</button>
+
+<button onclick="deleteTrip(${trip.id})">
+  🗑️ Delete Trip
+</button>
     `;
 
     tripsList.appendChild(div);
