@@ -295,7 +295,36 @@ function openTrip(trip) {
   `;
 }
  function openItinerary(trip) {
-  alert("Your day-by-day itinerary will go here!");
+  document.body.innerHTML = `
+    <header>
+      <h1>🗓️ ${trip.destination} Itinerary</h1>
+      <p>${formatDate(trip.startDate)} – ${formatDate(trip.endDate)}</p>
+    </header>
+
+    <div class="container">
+
+      <div class="card">
+        <h2>📅 Day-by-Day Plans</h2>
+        <div id="itineraryList">
+          <p class="empty">No plans added yet.</p>
+        </div>
+
+        <button class="primary" onclick="addItineraryItem(${trip.id})">
+          ➕ Add a Plan
+        </button>
+      </div>
+
+    </div>
+  `;
+}
+  function addItineraryItem(tripId) {
+  const date = prompt("What date is this plan for?");
+  if (!date) return;
+
+  const plan = prompt("What would you like to do?");
+  if (!plan) return;
+
+  alert("Plan added: " + date + " — " + plan);
 }
   function formatDate(date) {
 
