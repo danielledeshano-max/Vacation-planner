@@ -327,26 +327,54 @@ function openTrip(trip) {
   `;
 }
   function addItineraryItem(tripId) {
-  const dateInput = document.createElement("input");
-dateInput.type = "date";
-dateInput.min = trips.find(t => t.id === tripId).startDate;
-dateInput.max = trips.find(t => t.id === tripId).endDate;
- dateInput.style.opacity = "0";   
-document.body.appendChild(dateInput);
-dateInput.showPicker();
-    dateInput.onchange = function() {
-  const date = dateInput.value;
-  dateInput.remove();
+  const trip = trips.find(t => t.id === tripId);
 
-  const plan = prompt("What would you like to do?");
-  if (!plan) return;
-    const time = prompt("What time is this plan?");
-if (!time) return;
+  document.body.innerHTML = `
+    <header>
+      <h1>➕ Add a Plan</h1>
+      <p>${trip.destination}</p>
+    </header>
 
-    const trip = trips.find(t => t.id === tripId);
+    <div class="container">
+      <div class="card">
 
-  if (!trip.activities) {
-    trip.activities = [];
+        <label>Date</label>
+        <input
+          id="planDate"
+          type="date"
+          min="${trip.startDate}"
+          max="${trip.endDate}"
+        >
+
+        <label>Time</label>
+        <input id="planTime" type="time">
+
+        <label>What are you doing?</label>
+        <input
+          id="planName"
+          placeholder="Example: Oakland Zoo"
+        >
+
+        <button class="primary"
+          onclick="saveItineraryItem(${trip.id})">
+          Save Plan
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+function saveItineraryItem(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  const date = document.getElementById("planDate").value;
+  const time = document.getElementById("planTime").value;
+  const plan = document.getElementById("planName").value.trim();
+
+  if (!date || !time || !plan) {
+    alert("Please choose a date, time, and activity.");
+    return;
   }
 
   trip.activities.push({
@@ -355,13 +383,16 @@ if (!time) return;
     plan: plan
   });
 
+  trip.activities.sort((a, b) =>
+    (a.date + a.time).localeCompare(b.date + b.time)
+  );
+
   localStorage.setItem(
     "vacationTrips",
     JSON.stringify(trips)
   );
 
   openItinerary(trip);
-     }; 
 }
   function formatDate(date) {
 
