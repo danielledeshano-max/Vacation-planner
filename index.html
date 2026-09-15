@@ -1349,6 +1349,37 @@ const spent =
         ${hotelTotal > 0 ? `
   <div class="card">
     <h2>🏨 Hotel Cost</h2>
+    ${transportationTotal > 0 ? `
+  <div class="card">
+    <h2>✈️ Transportation Costs</h2>
+
+    ${(trip.transportation || [])
+      .filter(item => parseFloat(item.cost))
+      .map(item => `
+        <div class="trip">
+          <strong>
+            ${item.type} ${item.company || ""}
+          </strong>
+
+          ${item.date
+            ? `<p>📅 ${prettyDate(item.date)}</p>`
+            : ""
+          }
+
+          <p>
+            💵 $${Number(item.cost).toFixed(2)}
+          </p>
+        </div>
+      `).join("")}
+
+    <p>
+      <strong>
+        Transportation Total:
+        $${transportationTotal.toFixed(2)}
+      </strong>
+    </p>
+  </div>
+` : ""}
     <div class="trip">
       <strong>${trip.hotel.name}</strong>
       <p>💵 $${hotelTotal.toFixed(2)}</p>
