@@ -211,6 +211,9 @@ function displayTrips() {
     const div = document.createElement("div");
 
     div.className = "trip";
+    div.onclick = function() {
+  alert("Trip opened!");
+};
 
     div.innerHTML = `
       <div class="trip-title">
