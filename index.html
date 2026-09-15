@@ -272,7 +272,7 @@ function openTrip(trip) {
 
       <div class="card">
         <h2>🎟️ Activities</h2>
-        <button class="primary" onclick="alert('Activities coming next!')">
+        <button class="primary" onclick="openActivities(trips[0])">
           Add Activities
         </button>
       </div>
@@ -875,6 +875,218 @@ function deleteRestaurant(tripId, index) {
   );
 
   openRestaurants(trip);
+}
+function openActivities(trip) {
+  if (!trip.tripActivities) trip.tripActivities = [];
+
+  document.body.innerHTML = `
+    <header>
+      <button
+        onclick="openTrip(trips[0])"
+        style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
+        ← Back
+      </button>
+
+      <h1>🎟️ Activities</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <h2>My Activities</h2>
+
+        ${trip.tripActivities.length
+          ? trip.tripActivities.map((activity, index) => `
+              <div class="trip">
+                <div class="trip-title">
+                  🎟️ ${activity.name}
+                </div>
+
+                ${activity.date
+                  ? `<p>📅 ${prettyDate(activity.date)}</p>`
+                  : ""
+                }
+
+                ${activity.time
+                  ? `<p>🕐 ${prettyTime(activity.time)}</p>`
+                  : ""
+                }
+
+                ${activity.address
+                  ? `<p>📍 ${activity.address}</p>`
+                  : ""
+                }
+
+                ${activity.cost
+                  ? `<p>💵 $${activity.cost}</p>`
+                  : ""
+                }
+
+                ${activity.confirmation
+                  ? `<p>🎫 Confirmation: ${activity.confirmation}</p>`
+                  : ""
+                }
+
+                ${activity.note
+                  ? `<p>📝 ${activity.note}</p>`
+                  : ""
+                }
+
+                ${activity.address
+                  ? `<button
+                       onclick="openPlaceInMaps('${encodeURIComponent(activity.address)}')">
+                       🗺️ Open in Maps
+                     </button>`
+                  : ""
+                }
+
+                <button
+                  onclick="deleteActivity(${trip.id}, ${index})">
+                  🗑️ Delete
+                </button>
+              </div>
+            `).join("")
+          : '<p class="empty">No activities saved yet.</p>'
+        }
+
+        <button
+          class="primary"
+          onclick="addActivity(${trip.id})">
+          ➕ Add Activity
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function addActivity(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  document.body.innerHTML = `
+    <header>
+      <h1>🎟️ Add Activity</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+
+        <label>Activity name</label>
+        <input id="activityName"
+          placeholder="Example: Oakland Zoo">
+
+        <label>Date</label>
+        <input
+          id="activityDate"
+          type="date"
+          min="${trip.startDate}"
+          max="${trip.endDate}"
+        >
+
+        <label>Time</label>
+        <input id="activityTime" type="time">
+
+        <label>Address</label>
+        <input id="activityAddress"
+          placeholder="Optional">
+
+        <label>Cost</label>
+        <input
+          id="activityCost"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="Example: 45.00"
+        >
+
+        <label>Ticket / confirmation number</label>
+        <input id="activityConfirmation"
+          placeholder="Optional">
+
+        <label>Notes</label>
+        <input id="activityNote"
+          placeholder="Optional">
+
+        <button
+          class="primary"
+          onclick="saveActivity(${trip.id})">
+          Save Activity
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+function saveActivity(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  const name =
+    document.getElementById("activityName").value.trim();
+
+  const date =
+    document.getElementById("activityDate").value;
+
+  const time =
+    document.getElementById("activityTime").value;
+
+  const address =
+    document.getElementById("activityAddress").value.trim();
+
+  const cost =
+    document.getElementById("activityCost").value;
+
+  const confirmation =
+    document.getElementById("activityConfirmation").value.trim();
+
+  const note =
+    document.getElementById("activityNote").value.trim();
+
+  if (!name) {
+    alert("Please enter an activity name.");
+    return;
+  }
+
+  if (!trip.tripActivities) {
+    trip.tripActivities = [];
+  }
+
+  trip.tripActivities.push({
+    name: name,
+    date: date,
+    time: time,
+    address: address,
+    cost: cost,
+    confirmation: confirmation,
+    note: note
+  });
+
+  trip.tripActivities.sort((a, b) =>
+    ((a.date || "") + (a.time || ""))
+      .localeCompare((b.date || "") + (b.time || ""))
+  );
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openActivities(trip);
+}
+
+function deleteActivity(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+
+  if (!confirm("Delete this activity?")) return;
+
+  trip.tripActivities.splice(index, 1);
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openActivities(trip);
 }
   function formatDate(date) {
 
