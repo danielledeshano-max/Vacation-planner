@@ -429,6 +429,13 @@ function openTrip(trip) {
     Transportation Details
   </button>
 </div>
+<div class="card">
+  <h2>🎫 Reservations & Tickets</h2>
+  <button class="primary"
+    onclick="openReservations(trips.find(t => t.id === ${trip.id}))">
+    Reservations & Tickets
+  </button>
+</div>
       <div class="card">
   <h2>🏨 Hotel</h2>
   <button class="primary"
