@@ -258,7 +258,7 @@ function openTrip(trip) {
 
       <div class="card">
         <h2>📍 Places & Map</h2>
-        <button class="primary" onclick="alert('Map coming next!')">
+        <button class="primary" onclick="openPlaces(trips[0])">
           Add Places
         </button>
       </div>
@@ -557,6 +557,149 @@ function saveItineraryItem(tripId) {
   );
 
   openItinerary(trip);
+}
+function openPlaces(trip) {
+  if (!trip.places) trip.places = [];
+
+  document.body.innerHTML = `
+    <header>
+      <button
+        onclick="openTrip(trips[0])"
+        style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
+        ← Back
+      </button>
+
+      <h1>📍 Places & Map</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+
+      <div class="card">
+        <h2>Saved Places</h2>
+
+        ${trip.places.length
+          ? trip.places.map((place, index) => `
+              <div class="trip">
+                <div class="trip-title">${place.name}</div>
+                <p>📍 ${place.address}</p>
+
+                ${place.note
+                  ? `<p>📝 ${place.note}</p>`
+                  : ""
+                }
+
+                <button onclick="openPlaceInMaps('${encodeURIComponent(place.address)}')">
+                  🗺️ Open in Maps
+                </button>
+
+                <button onclick="deletePlace(${trip.id}, ${index})">
+                  🗑️ Delete
+                </button>
+              </div>
+            `).join("")
+          : '<p class="empty">No places saved yet.</p>'
+        }
+
+        <button
+          class="primary"
+          onclick="addPlace(${trip.id})">
+          ➕ Add a Place
+        </button>
+      </div>
+
+    </div>
+  `;
+}
+
+function addPlace(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  document.body.innerHTML = `
+    <header>
+      <h1>📍 Add a Place</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+
+        <label>Place name</label>
+        <input id="placeName"
+          placeholder="Example: Oakland Zoo">
+
+        <label>Address</label>
+        <input id="placeAddress"
+          placeholder="Example: 9777 Golf Links Rd, Oakland, CA">
+
+        <label>Notes</label>
+        <input id="placeNote"
+          placeholder="Example: Arrive before 10 AM">
+
+        <button
+          class="primary"
+          onclick="savePlace(${trip.id})">
+          Save Place
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+function savePlace(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  const name =
+    document.getElementById("placeName").value.trim();
+
+  const address =
+    document.getElementById("placeAddress").value.trim();
+
+  const note =
+    document.getElementById("placeNote").value.trim();
+
+  if (!name || !address) {
+    alert("Please enter a place name and address.");
+    return;
+  }
+
+  if (!trip.places) trip.places = [];
+
+  trip.places.push({
+    name: name,
+    address: address,
+    note: note
+  });
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openPlaces(trip);
+}
+
+function deletePlace(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+
+  if (!confirm("Delete this place?")) return;
+
+  trip.places.splice(index, 1);
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openPlaces(trip);
+}
+
+function openPlaceInMaps(address) {
+  window.open(
+    "https://maps.apple.com/?q=" + address,
+    "_blank"
+  );
 }
   function formatDate(date) {
 
