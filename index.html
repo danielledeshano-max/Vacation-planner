@@ -258,46 +258,52 @@ function openTrip(trip) {
       </div>
 
       <div class="card">
-        <h2>📍 Places & Map</h2>
-        onclick="openPlaces(trips.find(t => t.id === ${trip.id}))"
-          Add Places
-        </button>
-      </div>
+  <h2>📍 Places & Map</h2>
+  <button class="primary"
+    onclick="openPlaces(trips.find(t => t.id === ${trip.id}))">
+    Add Places
+  </button>
+</div>
 
       <div class="card">
-        <h2>🍽️ Restaurants</h2>
-        onclick="openRestaurants(trips.find(t => t.id === ${trip.id}))"
-          Add Restaurants
-        </button>
-      </div>
+  <h2>🍽️ Restaurants</h2>
+  <button class="primary"
+    onclick="openRestaurants(trips.find(t => t.id === ${trip.id}))">
+    Add Restaurants
+  </button>
+</div>
 
       <div class="card">
-        <h2>🎟️ Activities</h2>
-        onclick="openActivities(trips.find(t => t.id === ${trip.id}))"
-          Add Activities
-        </button>
-      </div>
+  <h2>🎟️ Activities</h2>
+  <button class="primary"
+    onclick="openActivities(trips.find(t => t.id === ${trip.id}))">
+    Add Activities
+  </button>
+</div>
       
       <div class="card">
   <h2>🏨 Hotel</h2>
-  onclick="openHotel(trips.find(t => t.id === ${trip.id}))"
+  <button class="primary"
+    onclick="openHotel(trips.find(t => t.id === ${trip.id}))">
     Hotel Details
   </button>
 </div>
 
       <div class="card">
-        <h2>💰 Budget</h2>
-        onclick="openBudget(trips.find(t => t.id === ${trip.id}))"
-          Add Expense
-        </button>
-      </div>
+  <h2>💰 Budget</h2>
+  <button class="primary"
+    onclick="openBudget(trips.find(t => t.id === ${trip.id}))">
+    Add Expense
+  </button>
+</div>
 
       <div class="card">
-        <h2>🧳 Packing List</h2>
-        onclick="openPackingList(trips.find(t => t.id === ${trip.id}))"
-          Add Item
-        </button>
-      </div>
+  <h2>🧳 Packing List</h2>
+  <button class="primary"
+    onclick="openPackingList(trips.find(t => t.id === ${trip.id}))">
+    Open Packing List
+  </button>
+</div>
 
     </div>
   `;
