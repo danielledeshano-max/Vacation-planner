@@ -212,7 +212,7 @@ function displayTrips() {
 
     div.className = "trip";
     div.onclick = function() {
-  alert("Trip opened!");
+  openTrip(trip);
 };
 
     div.innerHTML = `
@@ -235,7 +235,66 @@ function displayTrips() {
   });
 }
 
-function formatDate(date) {
+function openTrip(trip) {
+  document.body.innerHTML = `
+    <header>
+      <h1>✈️ ${trip.destination}</h1>
+      <p>${formatDate(trip.startDate)} – ${formatDate(trip.endDate)}</p>
+    </header>
+
+    <div class="container">
+
+      <div class="card">
+        <h2>👨‍👩‍👧‍👦 Trip Details</h2>
+        <p>${trip.travelers} travelers</p>
+      </div>
+
+      <div class="card">
+        <h2>🗓️ Itinerary</h2>
+        <button class="primary" onclick="alert('Itinerary coming next!')">
+          Add Itinerary
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>📍 Places & Map</h2>
+        <button class="primary" onclick="alert('Map coming next!')">
+          Add Places
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>🍽️ Restaurants</h2>
+        <button class="primary" onclick="alert('Restaurants coming next!')">
+          Add Restaurants
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>🎟️ Activities</h2>
+        <button class="primary" onclick="alert('Activities coming next!')">
+          Add Activities
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>💰 Budget</h2>
+        <button class="primary" onclick="alert('Budget coming next!')">
+          Add Expense
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>🧳 Packing List</h2>
+        <button class="primary" onclick="alert('Packing list coming next!')">
+          Add Item
+        </button>
+      </div>
+
+    </div>
+  `;
+}
+  function formatDate(date) {
 
   if (!date) return "";
 
