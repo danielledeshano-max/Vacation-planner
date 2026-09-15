@@ -293,7 +293,7 @@ function openTrip(trip) {
 
       <div class="card">
         <h2>🧳 Packing List</h2>
-        <button class="primary" onclick="alert('Packing list coming next!')">
+        <button class="primary" onclick="openPackingList(trips[0])">
           Add Item
         </button>
       </div>
@@ -1547,6 +1547,238 @@ function saveHotel(tripId) {
   );
 
   openHotel(trip);
+}
+function openPackingList(trip) {
+  if (!trip.packingList) trip.packingList = [];
+
+  const packedCount =
+    trip.packingList.filter(item => item.packed).length;
+
+  const totalCount = trip.packingList.length;
+
+  const categories = [
+    "👕 Clothes",
+    "🧴 Toiletries",
+    "🧸 Kids",
+    "🔌 Electronics",
+    "📄 Documents",
+    "🎒 Other"
+  ];
+
+  document.body.innerHTML = `
+    <header>
+      <button
+        onclick="openTrip(trips[0])"
+        style="background:rgba(255,255,255,.2);color:white;margin-bottom:15px;">
+        ← Back
+      </button>
+
+      <h1>🧳 Packing List</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+
+      <div class="card">
+        <h2>📦 Packing Progress</h2>
+
+        <p>
+          <strong>${packedCount} of ${totalCount}</strong>
+          items packed
+        </p>
+
+        ${totalCount > 0 ? `
+          <progress
+            value="${packedCount}"
+            max="${totalCount}"
+            style="width:100%;height:25px;">
+          </progress>
+        ` : ""}
+      </div>
+
+      <div class="card">
+        <h2>My Packing List</h2>
+
+        ${totalCount
+          ? categories.map(category => {
+
+              const items =
+                trip.packingList
+                  .map((item, index) => ({
+                    ...item,
+                    originalIndex: index
+                  }))
+                  .filter(item =>
+                    item.category === category
+                  );
+
+              if (!items.length) return "";
+
+              return `
+                <h3>${category}</h3>
+
+                ${items.map(item => `
+                  <div class="trip">
+
+                    <div
+                      onclick="togglePacked(${trip.id}, ${item.originalIndex})"
+                      style="cursor:pointer;">
+
+                      <div class="trip-title"
+                        style="${item.packed
+                          ? "text-decoration:line-through;opacity:.55;"
+                          : ""
+                        }">
+
+                        ${item.packed ? "✅" : "⬜️"}
+                        ${item.name}
+
+                      </div>
+                    </div>
+
+                    <button
+                      onclick="deletePackingItem(${trip.id}, ${item.originalIndex})">
+                      🗑️ Delete
+                    </button>
+
+                  </div>
+                `).join("")}
+              `;
+
+            }).join("")
+          : '<p class="empty">Your packing list is empty.</p>'
+        }
+
+        <button
+          class="primary"
+          onclick="addPackingItem(${trip.id})">
+          ➕ Add Item
+        </button>
+      </div>
+
+    </div>
+  `;
+}
+
+
+function addPackingItem(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  document.body.innerHTML = `
+    <header>
+      <h1>➕ Add Packing Item</h1>
+      <p>${trip.destination}</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+
+        <label>What do you need to pack?</label>
+
+        <input
+          id="packingItemName"
+          placeholder="Example: Swimsuits"
+        >
+
+        <label>Category</label>
+
+        <select
+          id="packingCategory"
+          style="
+            width:100%;
+            padding:14px;
+            margin:7px 0 15px;
+            border:1px solid #d1d5db;
+            border-radius:12px;
+            font-size:16px;
+          ">
+
+          <option>👕 Clothes</option>
+          <option>🧴 Toiletries</option>
+          <option>🧸 Kids</option>
+          <option>🔌 Electronics</option>
+          <option>📄 Documents</option>
+          <option>🎒 Other</option>
+
+        </select>
+
+        <button
+          class="primary"
+          onclick="savePackingItem(${trip.id})">
+          Add to Packing List
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+
+function savePackingItem(tripId) {
+  const trip = trips.find(t => t.id === tripId);
+
+  const name =
+    document.getElementById("packingItemName")
+      .value.trim();
+
+  const category =
+    document.getElementById("packingCategory")
+      .value;
+
+  if (!name) {
+    alert("Please enter an item.");
+    return;
+  }
+
+  if (!trip.packingList) {
+    trip.packingList = [];
+  }
+
+  trip.packingList.push({
+    name: name,
+    category: category,
+    packed: false
+  });
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openPackingList(trip);
+}
+
+
+function togglePacked(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+
+  trip.packingList[index].packed =
+    !trip.packingList[index].packed;
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openPackingList(trip);
+}
+
+
+function deletePackingItem(tripId, index) {
+  const trip = trips.find(t => t.id === tripId);
+
+  if (!confirm("Delete this packing item?")) {
+    return;
+  }
+
+  trip.packingList.splice(index, 1);
+
+  localStorage.setItem(
+    "vacationTrips",
+    JSON.stringify(trips)
+  );
+
+  openPackingList(trip);
 }
   function formatDate(date) {
 
