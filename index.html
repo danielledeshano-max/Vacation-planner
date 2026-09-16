@@ -121,6 +121,23 @@ button {
     <button class="primary" onclick="showNewTrip()">
       ➕ Create New Trip
     </button>
+    <br><br>
+
+<button onclick="backupTrips()">
+  💾 Backup My Trips
+</button>
+
+<button onclick="document.getElementById('restoreFile').click()">
+  📥 Restore My Trips
+</button>
+
+<input
+  type="file"
+  id="restoreFile"
+  accept=".json,application/json"
+  style="display:none"
+  onchange="restoreTrips(event)"
+>
   </div>
 
   <div class="card" id="newTripCard" style="display:none;">
@@ -2673,6 +2690,72 @@ function saveTrips() {
     "vacationTrips",
     JSON.stringify(trips)
   );
+}
+function backupTrips() {
+  const data = localStorage.getItem("vacationTrips");
+
+  if (!data || JSON.parse(data).length === 0) {
+    alert("There are no trips to back up.");
+    return;
+  }
+
+  const blob = new Blob([data], {
+    type: "application/json"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "vacation-planner-backup.json";
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  URL.revokeObjectURL(url);
+
+  alert("Your vacation backup has been created!");
+}
+
+
+function restoreTrips(event) {
+  const file = event.target.files[0];
+
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    try {
+      const restoredTrips = JSON.parse(e.target.result);
+
+      if (!Array.isArray(restoredTrips)) {
+        throw new Error("Invalid backup");
+      }
+
+      if (!confirm(
+        "Restore this backup? This will replace the trips currently stored in this version of Vacation Planner."
+      )) {
+        event.target.value = "";
+        return;
+      }
+
+      localStorage.setItem(
+        "vacationTrips",
+        JSON.stringify(restoredTrips)
+      );
+
+      alert("Your trips have been restored!");
+
+      location.reload();
+
+    } catch (error) {
+      alert("That file does not appear to be a Vacation Planner backup.");
+    }
+  };
+
+  reader.readAsText(file);
 }
   function formatDate(date) {
 
